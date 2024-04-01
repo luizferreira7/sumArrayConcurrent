@@ -68,6 +68,15 @@ FloatPoint sumFloatPoint(FloatPoint f1, FloatPoint f2) {
     //Reliza soma das mantissas
     unsigned int sumMantissa = (result.parts.mantissa * sign) + (aux.parts.mantissa * auxSign);
 
+    printf("%d\n", result.parts.mantissa);
+
+    printf("%d\n", aux.parts.mantissa);
+
+    //Verifica qual deve ser o sinal do resultado final de acordo com o tamanho absoluto da mantissa
+    if (result.parts.mantissa <= aux.parts.mantissa) {
+        result.parts.sign = aux.parts.sign;
+    }
+
     //Verifica se ocorre overflow
     if (sumMantissa > (1 << 23)) {
         //Caso ocorra realiza shift para direita
@@ -80,17 +89,9 @@ FloatPoint sumFloatPoint(FloatPoint f1, FloatPoint f2) {
         result.parts.mantissa = sumMantissa;
     }
 
-    //Verifica qual deve ser o sinal do resultado final de acordo com o tamanho absoluto da mantissa
-    if (f1.parts.mantissa >= f2.parts.mantissa) {
-        result.parts.sign = f1.parts.sign;
-        aux.parts.sign = f2.parts.sign;
-    } else {
-        result.parts.sign = f2.parts.sign;
-        aux.parts.sign = f1.parts.sign;
-    }
-
     return result;
 }
+
 
 int main() {
     FloatPoint fPoint1 = { .f = -3.0 };
