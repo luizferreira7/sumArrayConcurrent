@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     //Define intervalo maximo dos numeros
-    float min = -1000.0;
-    float max = 1000.0;
+    float min = -100.0f;
+    float max = 100.0f;
 
     int n = 5;
     float sum = 0.0;
