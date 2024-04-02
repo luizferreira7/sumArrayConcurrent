@@ -1,6 +1,6 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "time.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //Gera float randomizado
 float randomFloat(float min, float max) {
@@ -8,17 +8,23 @@ float randomFloat(float min, float max) {
 }
 
 int main(int argc, char *argv[]) {
+
+    if (argc <= 2)
+        return -1;
+
+    char *filename = argv[2];
+
     FILE *file;
 
     //Prepara arquivo para escrita
-    file = fopen("array.txt", "w");
+    file = fopen(filename, "w");
 
     //Inicia seed para gerar pseudo aleatório
     srand(time(NULL));
 
     //Define intervalo maximo dos numeros
-    float min = -100.0f;
-    float max = 100.0f;
+    float min = -1000.0f;
+    float max = 1000.0f;
 
     int n = 5;
     float sum = 0.0;
