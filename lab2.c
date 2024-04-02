@@ -1,10 +1,10 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "pthread.h"
-#include "math.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <math.h>
+#include <string.h>
 
-#define M 3
+#define TEST
 
 typedef struct {
     char *floatChar;
@@ -22,21 +22,20 @@ typedef struct {
 void printArray(CustomFloat *array, int size) {
     for (int i = 0; i < size; i++) {
         printf("%s", array[i].floatChar);
+
+        if (i > 0 && i < size - 1) {
+            printf(", ");
+        }
     }
 
     printf("\n");
 }
 
 //Le array de float a partir de um arquivo
-void readArray(char *filename, CustomFloat **array, int *size, CustomFloat *sum) {
-
-    FILE *file;
+void readArray(CustomFloat **array, int *size, CustomFloat *sum) {
     char line[100];
 
-    file = fopen(filename, "r");
-
-    //Converte cada linha do arquivo para um float do array
-    while (fgets(line, sizeof(line), file) != NULL) {
+    while (scanf("%s", line) != EOF) {
         int nDigits = 0;
         int flag = 0;
 
@@ -46,7 +45,7 @@ void readArray(char *filename, CustomFloat **array, int *size, CustomFloat *sum)
                 continue;
             }
 
-            if (line[i] == '\n') {
+            if (line[i] == '\0') {
                 break;
             }
 
@@ -57,7 +56,6 @@ void readArray(char *filename, CustomFloat **array, int *size, CustomFloat *sum)
 
         char *p;
         float f = strtof(line, &p);
-
         float temp = f * pow(10, nDigits);
         int c = (int) temp;
         c *= (int) pow(10, 6 - nDigits);
@@ -82,13 +80,11 @@ void readArray(char *filename, CustomFloat **array, int *size, CustomFloat *sum)
     *sum = (*array)[*size - 1];
     *array = realloc(*array, (*size - 1)  * sizeof(CustomFloat));
     (*size)--;
-
-    fclose(file);
 }
 
 //Metodo que soma os valores do array de uma determinada posição inicial ate uma final
-int sumArray(CustomFloat *array, int start, int end) {
-    int sum = 0;
+long int sumArray(CustomFloat *array, int start, int end) {
+    long int sum = 0;
     for (int i = start; i < end; i++) {
         sum += array[i].intValue;
     }
@@ -101,7 +97,7 @@ void *sumArrayThread(void *args) {
     ThreadArgs *thread_args = (ThreadArgs *)args;
 
     //Declara ponteiro usado para retornar calculo realizado na Thread
-    int *t_sum_ptr = malloc(sizeof(int));
+    long int *t_sum_ptr = malloc(sizeof(long int));
     *t_sum_ptr = sumArray(thread_args -> array, thread_args -> start, thread_args -> end);
 
     printf("--Thread %d terminou a execução.\n", thread_args -> index);
@@ -110,17 +106,23 @@ void *sumArrayThread(void *args) {
     pthread_exit(t_sum_ptr);
 }
 
+void test(CustomFloat sumSequential) {
+    printf("A soma original é: %s\n", sumSequential.floatChar);
+}
+
 //Função main que contem a logica principal
 int main(int argc, char *argv[]) {
 
-    char *filename = argv[1];
-    int sum = 0;
+    if (argc == 1)
+        return -1;
+
+    int M = atoi(argv[1]);
+
     int size = 0;
-
     CustomFloat *array = NULL;
-    CustomFloat originalSum;
+    CustomFloat sumSequential;
 
-    readArray(filename, &array, &size, &originalSum);
+    readArray(&array, &size, &sumSequential);
 
     printArray(array, size);
 
@@ -150,20 +152,25 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    long int sumConcurrent = 0;
     for (int i = 0; i < M; i++) {
-        int *t_sum_p;
+        long int *t_sum_p;
         if (pthread_join(tid_sistema[i], (void*) &t_sum_p)) {
-            printf("--ERRO: pthread_join() \n"); exit(-1);
+            printf("--ERRO: pthread_join() \n");
+            exit(-1);
         }
 
         printf("T[%i]: %f\n", i, (float) *t_sum_p / 1000000);
-        sum += *t_sum_p;
+        sumConcurrent += *t_sum_p;
     }
 
-    printf("A soma original é: %s\n", originalSum.floatChar);
-    printf("A soma é: %f", (float) sum / 1000000);
+    printf("A soma é: %f\n", (float) sumConcurrent / 1000000);
 
     free(array);
+
+#ifdef TEST
+    test(sumSequential);
+#endif
 
     return 0;
 }
