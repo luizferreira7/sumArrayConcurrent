@@ -32,7 +32,7 @@ void printArray(CustomFloat *array, int size) {
 }
 
 //Le array de float a partir de um arquivo
-void readArray(CustomFloat **array, int *size, CustomFloat *sum) {
+void readArray(CustomFloat **array, int *size) {
     char line[100];
 
     while (scanf("%s", line) != EOF) {
@@ -61,25 +61,19 @@ void readArray(CustomFloat **array, int *size, CustomFloat *sum) {
         c *= (int) pow(10, 6 - nDigits);
 
         CustomFloat customFloat;
-        customFloat.floatChar = (char *) malloc(strlen(line)+1);
-        int index=0;
-        while(index <= strlen(line))
-        {
+        customFloat.floatChar = (char *) malloc(strlen(line) + 1);
+        int index = 0;
+        while (index <= strlen(line)) {
             customFloat.floatChar[index] = line[index];
             index++;
         }
 
         customFloat.intValue = c;
 
-        *array = realloc(*array, (*size + 1)  * sizeof(CustomFloat));
+        *array = realloc(*array, (*size + 1) * sizeof(CustomFloat));
         (*array)[*size] = customFloat;
         (*size)++;
     }
-
-    //Remove a soma dos valores do array e atribui para variavel
-    *sum = (*array)[*size - 1];
-    *array = realloc(*array, (*size - 1)  * sizeof(CustomFloat));
-    (*size)--;
 }
 
 //Metodo que soma os valores do array de uma determinada posição inicial ate uma final
@@ -106,8 +100,12 @@ void *sumArrayThread(void *args) {
     pthread_exit(t_sum_ptr);
 }
 
-void test(CustomFloat sumSequential) {
-    printf("A soma original é: %s\n", sumSequential.floatChar);
+void test(CustomFloat *array, int size, float sumConcurrent) {
+    float sumSequential = (float) sumArray(array, 0, size) / 1000000;
+
+    printf("A soma sequential é: %f\n",  sumSequential);
+
+    printf("A diferença de precisao foi: %f\n", sumSequential - sumConcurrent);
 }
 
 //Função main que contem a logica principal
@@ -120,9 +118,8 @@ int main(int argc, char *argv[]) {
 
     int size = 0;
     CustomFloat *array = NULL;
-    CustomFloat sumSequential;
 
-    readArray(&array, &size, &sumSequential);
+    readArray(&array, &size);
 
     printArray(array, size);
 
@@ -152,7 +149,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    long int sumConcurrent = 0;
+    long int sumConcurrentInt = 0;
     for (int i = 0; i < M; i++) {
         long int *t_sum_p;
         if (pthread_join(tid_sistema[i], (void*) &t_sum_p)) {
@@ -161,16 +158,17 @@ int main(int argc, char *argv[]) {
         }
 
         printf("T[%i]: %f\n", i, (float) *t_sum_p / 1000000);
-        sumConcurrent += *t_sum_p;
+        sumConcurrentInt += *t_sum_p;
     }
 
-    printf("A soma é: %f\n", (float) sumConcurrent / 1000000);
-
-    free(array);
+    float sumConcurrent = (float) sumConcurrentInt / 1000000;
+    printf("A soma é: %f\n", sumConcurrent);
 
 #ifdef TEST
-    test(sumSequential);
+    test(array, size, sumConcurrent);
 #endif
+
+    free(array);
 
     return 0;
 }
