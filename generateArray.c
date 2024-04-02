@@ -9,10 +9,16 @@ float randomFloat(float min, float max) {
 
 int main(int argc, char *argv[]) {
 
+    //Verifica se foram passados o numero correto de argumentos para o programa
     if (argc <= 2)
         return -1;
 
-    char *filename = argv[2];
+    char *filename;
+
+    //Le nome do arquivo
+    if (argv[2] != NULL) {
+        filename = argv[2];
+    }
 
     FILE *file;
 
@@ -26,10 +32,9 @@ int main(int argc, char *argv[]) {
     float min = -1000.0f;
     float max = 1000.0f;
 
-    int n = 5;
-    float sum = 0.0;
+    int n = 0;
 
-    //Le quantidade d enumeros
+    //Le quantidade de linhas
     if (argv[1] != NULL) {
         n = atoi(argv[1]);
     }
@@ -37,20 +42,17 @@ int main(int argc, char *argv[]) {
     //Popula o arquivo
     for (int i = 0; i < n; i++) {
         float f = randomFloat(min, max);
-        sum += f;
 
         char c[40];
         sprintf(c, "%g", f);
         fprintf(file, "%s", c);
-        fprintf(file, "\n");
+
+        if (i < n - 1) {
+            fprintf(file, "\n");
+        }
     }
 
-    //Adiciona soma como ultimo valor do arquivo
-    char c[40];
-    sprintf(c, "%g", sum);
-    fprintf(file, "%s", c);
-
-    //Fecha arquivo temrinando escrita
+    //Fecha arquivo terminando escrita
     fclose(file);
 
     return 0;
