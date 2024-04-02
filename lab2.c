@@ -30,7 +30,7 @@ void *sumArrayThread(void *args) {
     pthread_exit(t_sum_ptr);
 }
 
-void testSum(Real *array, int size, Real sumConcurrent) {
+int testSum(Real *array, int size, Real sumConcurrent) {
     Real sumSequential = sumArray(array, 0, size);
 
     printf("\n");
@@ -42,6 +42,12 @@ void testSum(Real *array, int size, Real sumConcurrent) {
     printf("A diferença de precisao em double foi: %lf\n", sumSequential.doubleValue - sumConcurrent.doubleValue);
     printf("A diferença de precisao em float foi: %f\n", sumSequential.floatValue - sumConcurrent.floatValue);
     printf("A diferença de precisao com tratamento foi: %f\n", convertLongIntToFloat(sumSequential.intValue) - convertLongIntToFloat(sumConcurrent.intValue));
+
+    if (sumSequential.floatValue - sumConcurrent.floatValue > 0.01) {
+        return -1;
+    }
+
+    return 0;
 }
 
 
@@ -113,11 +119,13 @@ int main(int argc, char *argv[]) {
     printf("A soma em float é: %f\n", sumConcurrent.floatValue);
     printf("A soma com tratamento é: %f\n", convertLongIntToFloat(sumConcurrent.intValue));
 
-#ifdef TEST
-    testSum(array, size, sumConcurrent);
-#endif
-
     free(array);
+
+#ifdef TEST
+    if (testSum(array, size, sumConcurrent) < 0) {
+        printf("Erro de precisão muito grande!\n");
+    }
+#endif
 
     return 0;
 }
