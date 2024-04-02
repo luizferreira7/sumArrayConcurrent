@@ -5,9 +5,10 @@
 #include "util.c"
 
 #define TEST
+//#define PRINT
 
 typedef struct {
-    Float *array;
+    Real *array;
     int start;
     int end;
     int index;
@@ -18,22 +19,31 @@ void *sumArrayThread(void *args) {
     ThreadArgs *thread_args = (ThreadArgs *)args;
 
     //Declara ponteiro usado para retornar calculo realizado na Thread
-    long long int *t_sum_ptr = malloc(sizeof(long int));
+    Real *t_sum_ptr = malloc(sizeof(Real));
     *t_sum_ptr = sumArray(thread_args -> array, thread_args -> start, thread_args -> end);
 
+#ifdef PRINT
     printf("--Thread %d terminou a execução.\n", thread_args -> index);
+#endif
 
     free(args);
     pthread_exit(t_sum_ptr);
 }
 
-void test(Float *array, int size, float sumConcurrent) {
-    float sumSequential = (float) sumArray(array, 0, size) / FLOAT_SIZE;
+void testSum(Real *array, int size, Real sumConcurrent) {
+    Real sumSequential = sumArray(array, 0, size);
 
-    printf("A soma sequential é: %f\n",  sumSequential);
+    printf("\n");
+    printf("A soma sequential em double é: %lf\n",  sumSequential.doubleValue);
+    printf("A soma sequential em float é: %f\n",  sumSequential.floatValue);
+    printf("A soma sequential com tratamento é: %f\n", convertLongIntToFloat(sumSequential.intValue));
 
-    printf("A diferença de precisao foi: %f\n", sumSequential - sumConcurrent);
+    printf("\n");
+    printf("A diferença de precisao em double foi: %lf\n", sumSequential.doubleValue - sumConcurrent.doubleValue);
+    printf("A diferença de precisao em float foi: %f\n", sumSequential.floatValue - sumConcurrent.floatValue);
+    printf("A diferença de precisao com tratamento foi: %f\n", convertLongIntToFloat(sumSequential.intValue) - convertLongIntToFloat(sumConcurrent.intValue));
 }
+
 
 //Função main que contem a logica principal
 int main(int argc, char *argv[]) {
@@ -44,11 +54,11 @@ int main(int argc, char *argv[]) {
     int M = atoi(argv[1]);
 
     int size = 0;
-    Float *array = NULL;
+    Real *array = NULL;
 
     readArray(&array, &size);
 
-#ifdef TEST
+#ifdef PRINT
     printArray(array, size);
 #endif
 
@@ -59,7 +69,9 @@ int main(int argc, char *argv[]) {
     int remainder = size % M;
 
     for(int i = 0; i < M; i++) {
+#ifdef PRINT
         printf("--Cria a thread %d\n", i);
+#endif
 
         // Prepara os argumentos da Thread
         ThreadArgs *args = malloc(sizeof(ThreadArgs));
@@ -78,24 +90,31 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    long long int sumConcurrentInt = 0;
+    Real sumConcurrent;
+    sumConcurrent.floatValue = 0.0f;
+    sumConcurrent.doubleValue = 0.0;
+    sumConcurrent.intValue = 0;
+
     for (int i = 0; i < M; i++) {
-        long long int *t_sum_p;
-        if (pthread_join(tid_sistema[i], (void*) &t_sum_p)) {
+        Real *tempSumP;
+        if (pthread_join(tid_sistema[i], (void*) &tempSumP)) {
             printf("--ERRO: pthread_join() \n");
             exit(-1);
         }
-#ifdef TEST
-        printf("T[%i]: %f\n", i, convertLongIntToFloat(*t_sum_p));
+#ifdef PRINT
+        printf("T[%i]: %f\n", i, convertLongIntToFloat(tempSumP -> intValue));
 #endif
-        sumConcurrentInt += *t_sum_p;
+        sumConcurrent.floatValue += tempSumP -> floatValue;
+        sumConcurrent.doubleValue += tempSumP -> doubleValue;
+        sumConcurrent.intValue += tempSumP -> intValue;
     }
 
-    float sumConcurrent = convertLongIntToFloat(sumConcurrentInt);
-    printf("A soma é: %f\n", sumConcurrent);
+    printf("A soma em double é: %lf\n", sumConcurrent.doubleValue);
+    printf("A soma em float é: %f\n", sumConcurrent.floatValue);
+    printf("A soma com tratamento é: %f\n", convertLongIntToFloat(sumConcurrent.intValue));
 
 #ifdef TEST
-    test(array, size, sumConcurrent);
+    testSum(array, size, sumConcurrent);
 #endif
 
     free(array);

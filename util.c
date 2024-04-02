@@ -5,11 +5,11 @@
 #define FLOAT_SIZE 1000000
 
 typedef struct {
-    char *floatChar;
-    float value;
+    char *string;
+    float floatValue;
+    double doubleValue;
     long long int intValue;
-} Float;
-
+} Real;
 
 //Gera float randomizado
 float randomFloat(float min, float max) {
@@ -17,9 +17,9 @@ float randomFloat(float min, float max) {
 }
 
 // Metodo que imprime o vetor
-void printArray(Float *array, int size) {
+void printArray(Real *array, int size) {
     for (int i = 0; i < size; i++) {
-        printf("%s", array[i].floatChar);
+        printf("%s", array[i].string);
 
         if (i > 0 && i < size - 1) {
             printf(", ");
@@ -30,10 +30,16 @@ void printArray(Float *array, int size) {
 }
 
 //Metodo que soma os valores do array de uma determinada posição inicial ate uma final
-long long int sumArray(Float *array, int start, int end) {
-    long long int sum = 0;
+Real sumArray(Real *array, int start, int end) {
+    Real sum;
+    sum.floatValue = 0.0f;
+    sum.intValue = 0;
+    sum.doubleValue = 0.0;
+
     for (int i = start; i < end; i++) {
-        sum += array[i].intValue;
+        sum.intValue += array[i].intValue;
+        sum.doubleValue += array[i].doubleValue;
+        sum.floatValue += array[i].floatValue;
     }
 
     return sum;
@@ -41,7 +47,7 @@ long long int sumArray(Float *array, int start, int end) {
 
 
 //Le array de float a partir de um arquivo
-void readArray(Float **array, int *size) {
+void readArray(Real **array, int *size) {
     char line[100];
 
     while (scanf("%s", line) != EOF) {
@@ -69,19 +75,20 @@ void readArray(Float **array, int *size) {
         int c = (int) temp;
         c *= (int) pow(10, 6 - nDigits);
 
-        Float customFloat;
-        customFloat.floatChar = (char *) malloc(strlen(line) + 1);
+        Real real;
+        real.string = (char *) malloc(strlen(line) + 1);
         int index = 0;
         while (index <= strlen(line)) {
-            customFloat.floatChar[index] = line[index];
+            real.string[index] = line[index];
             index++;
         }
 
-        customFloat.value = f;
-        customFloat.intValue = c;
+        real.floatValue = f;
+        real.intValue = c;
+        real.doubleValue = atof(line);
 
-        *array = realloc(*array, (*size + 1) * sizeof(Float));
-        (*array)[*size] = customFloat;
+        *array = realloc(*array, (*size + 1) * sizeof(Real));
+        (*array)[*size] = real;
         (*size)++;
     }
 }
