@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-//Gera float randomizado
-float randomFloat(float min, float max) {
-    return min + ((float) rand() / RAND_MAX) * (max - min);
-}
+#include "util.c"
 
 int main(int argc, char *argv[]) {
 
