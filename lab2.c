@@ -118,14 +118,14 @@ int main(int argc, char *argv[]) {
     printf("A soma em double é: %lf\n", sumConcurrent.doubleValue);
     printf("A soma em float é: %f\n", sumConcurrent.floatValue);
     printf("A soma com tratamento é: %f\n", convertLongIntToFloat(sumConcurrent.intValue));
-
-    free(array);
-
+    
 #ifdef TEST
     if (testSum(array, size, sumConcurrent) < 0) {
         printf("Erro de precisão muito grande!\n");
     }
 #endif
+
+    free(array);
 
     return 0;
 }
